@@ -1,0 +1,36 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]   # 当 main 分支有提交时自动执行
+  workflow_dispatch:      # 允许手动触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #       - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      # 3️⃣ 安装依赖
+      - name: Install dependencies
+        run: npm install
+
+      # 4️⃣ 构建生产版本
+      - name: Build project
+        run: npm run build
+
+      # 5️⃣ 部署到 GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist   # ← 如果你的输出目录不同，请修改

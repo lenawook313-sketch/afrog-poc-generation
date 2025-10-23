@@ -1,0 +1,5 @@
+{
+  "name": "Afrog PoC Generation ",
+  "description": "A web-based tool to assist developers in creating Proof-of-Concept (PoC) files for the afrog scanner. Inspired by xray-poc-generation, this tool helps convert raw HTTP requests into a structured afrog YAML format, integrating afrog's helper functions for dynamic payloads.",
+  "requestFramePermissions": []
+}
