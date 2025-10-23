@@ -10,11 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 
+      # 1️⃣ 检出仓库代码
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      #       - name: Setup Node.js
+      # 2️⃣ 设置 Node.js 环境
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -33,4 +34,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist   # ← 如果你的输出目录不同，请修改
+          publish_dir: ./dist   # ← 如果你的输出目录不同，请改这里
