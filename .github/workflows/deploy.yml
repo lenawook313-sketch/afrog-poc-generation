@@ -1,5 +1,10 @@
 name: Build and Deploy to GitHub Pages
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 on:
   push:
     branches: [ main ]   # 当 main 分支有提交时自动执行
@@ -34,4 +39,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist   # ← 如果你的输出目录不同，请改这里
+          publish_dir: ./dist   # ← 如果构建结果在 build/，请改成 ./build
