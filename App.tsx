@@ -280,7 +280,7 @@ const App: React.FC = () => {
         }
         if (m.condition === 'bmatches') {
             const escapedValue = m.value.replace(/"/g, '\\"');
-            return `"${escapedValue}".bmatches(response.${m.type})`;
+            return `"root:.*?:[0-9]*:[0-9]*:".bmatches(response.${m.type})`;
         }
         if (m.condition === 'regex') {
             const escapedValue = m.value.replace(/"/g, '\\"');
