@@ -5,7 +5,8 @@
 POC编写函数文档:
 
 - [afrog](https://github.com/zan8in/afrog)
-- [如何编写YAML格式POC](https://github.com/zan8in/afrog/blob/main/afrog-helper-function.md)
+- [Afrog POC 规则编写权威指南](https://github.com/zan8in/afrog/blob/main/docs/afrog-poc-guide.md)
+- [afrog内置函数](https://github.com/zan8in/afrog/blob/main/docs/afrog-helper-function.m)
 
 ## PoC info
 
