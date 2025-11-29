@@ -182,7 +182,8 @@ const App: React.FC = () => {
   
   const updateRawRequest = (index: number, value: string) => {
     const newRawRequests = [...rawRequests];
-    newRawRequests[index] = value;
+    const cleanValue = value.replace(/\u00A0/g, '');
+    newRawRequests[index] = cleanValue;
     setRawRequests(newRawRequests);
   };
 
