@@ -312,7 +312,8 @@ const App: React.FC = () => {
 
           // 自动包裹 b"..."，并处理引号转义
         if (['bcontains', 'icontains'].includes(m.condition)) {
-            let cleanValue = m.value;            const escapedValue = cleanValue.replace(/"/g, '\\"'); // 转义双引号
+            let cleanValue = m.value;
+            const escapedValue = cleanValue.replace(/"/g, '\\"'); // 转义双引号
             return `response.${m.type}.${m.condition}(b"${escapedValue}")`;
         }
         if (m.condition === 'bmatches') {
