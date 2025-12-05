@@ -74,7 +74,7 @@ POC编写函数文档:
 
 填好正则就可以保存了
 
-![image-20251205214109021](J:\编程语言\TypeScript\afrog-poc-generation\assets\image-20251205214109021.png)
+![image-20251205214109021](/assets/image-20251205214109021.png)
 
 在第二个请求中，填入匹配符 `{{title['title']}}`
 
