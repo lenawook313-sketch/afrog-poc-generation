@@ -31,6 +31,7 @@ export interface Rule {
   request: HttpRequest;
   expression: string;
   matchers: Matcher[];
+  output?: Record<string, string>; 
 }
 
 export interface PocData {

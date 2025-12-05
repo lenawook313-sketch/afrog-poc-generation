@@ -88,6 +88,8 @@ export function generatePocYaml(data: PocData): string {
                 }
             }
 
+       
+            // body 添加
             if (rule.request.body) {
                 const bodyLines = rule.request.body.split('\n');
                 if (bodyLines.length > 1) {
@@ -99,6 +101,19 @@ export function generatePocYaml(data: PocData): string {
                     yaml += `${indent(3)}body: ${rule.request.body}\n`;
                 }
             }
+
+            // 添加 output 处理
+            if (rule.output && Object.keys(rule.output).length > 0) {
+                rule.output = rule.output;
+                //console.log("Rule Output:", rule.output); // Debug log
+                yaml += `${indent(2)}output:\n`;
+                for (const [key, value] of Object.entries(rule.output)) {
+                    yaml += `${indent(3)}${key}: ${value}\n`;
+                }
+                //console.log("YAML after adding output:\n", yaml); // Debug log
+            }
+
+
             yaml += `${indent(2)}expression: ${rule.expression}\n`;
         });
     }

