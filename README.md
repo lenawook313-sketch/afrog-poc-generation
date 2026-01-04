@@ -92,7 +92,7 @@ POC编写函数文档:
 
 [Brute PoC 编写规则](https://github.com/zan8in/afrog/wiki/Afrog-PoC-%E8%A7%84%E5%88%99%E7%BC%96%E5%86%99%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97#brute-%E5%AD%97%E5%85%B8%E6%9E%9A%E4%B8%BE%E8%A7%84%E5%88%99%E7%BA%A7)
 
-![image-20260104135223690](.\assets\image-20260104135223690.png)
+![image-20260104135223690](./assets/image-20260104135223690.png)
 
 
 
