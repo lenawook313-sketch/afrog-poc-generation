@@ -6,6 +6,7 @@ import {
   PocData,
   HttpRequest,
   Matcher,
+  Brute,
 } from './types';
 import { generatePocYaml, parseRawRequest } from './services/pocGenerator';
 import { PocOutput } from './components/PocOutput';
@@ -22,6 +23,7 @@ import {
 } from './components/icons';
 import { AFROG_FUNCTIONS } from './constants';
 import Extractors from './Extractors';
+import BruteForceEditor from './BruteForceEditor';
 
 
 const initialInfo: PocInfo = {
@@ -153,6 +155,17 @@ const App: React.FC = () => {
   const [rootExpression, setRootExpression] = useState('r0()');
   const [generatedPoc, setGeneratedPoc] = useState('');
   const [isCopied, setIsCopied] = useState(false);
+
+  const updateRuleBrute = (ruleIndex: number, newBrute: Brute | undefined) => {
+    // 创建 rules 数组的一个副本以避免直接修改 state
+    const newRules = [...rules];
+    
+    // 更新指定索引规则的 brute 属性
+    newRules[ruleIndex].brute = newBrute;
+    
+    // 使用新的数组来更新 state，这将触发 React 的重新渲染
+    setRules(newRules);
+  };
 
   useEffect(() => {
     const newRules = rawRequests.map((reqStr, index) => {
@@ -627,6 +640,18 @@ const updateRuleOutput = (ruleIndex: number, newOutput: Record<string, string>) 
                     </div>
 
                     {/* 分割线 */}
+                    <hr className="border-border/60 border-dashed" />
+                    <BruteForceEditor 
+                      // `brute` prop: 将当前循环到的 rule 的 brute 配置传下去
+                      // BruteForceEditor 将根据这个数据显示 UI
+                      brute={rule.brute} 
+                      
+                      // `onChange` prop: 将我们上面定义的更新函数传下去
+                      // 当 BruteForceEditor 内部发生变化时，它会调用这个函数
+                      // 并把新的 brute 数据作为参数传回来，从而更新 App 的 state
+                      onChange={(newBrute) => updateRuleBrute(ruleIndex, newBrute)} 
+                    />
+                     {/* 分割线 */}
                     <hr className="border-border/60 border-dashed" />
 
                     {/* 3. 提取器区块 (Extractors) */}

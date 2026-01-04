@@ -1,10 +1,7 @@
-
-import { PocData, HttpRequest } from '../types';
+import { PocData, HttpRequest, Rule } from '../types';
 
 /**
  * Parses a raw HTTP request string into a structured HttpRequest object.
- * @param rawRequest The raw HTTP request string.
- * @returns An HttpRequest object or null if parsing fails.
  */
 export function parseRawRequest(rawRequest: string): HttpRequest | null {
   try {
@@ -25,16 +22,16 @@ export function parseRawRequest(rawRequest: string): HttpRequest | null {
        if (trimmedKey.toLowerCase() !== 'host') {
         headers[trimmedKey] = valueParts.join(':').trim();
       }
-      //headers[key.trim()] = valueParts.join(':').trim();
     }
 
-    const body = bodyIndex !== -1 ? lines.slice(bodyIndex).join('\n') : null;
+    const body = bodyIndex !== -1 ? lines.slice(bodyIndex).join('\n') : undefined;
 
     if (!method || !path) {
         return null;
     }
 
-    return { method, path, headers, body };
+    // 修正：body 可能是 null 或 undefined，类型应为 string | null 或 string | undefined
+    return { method, path, headers, body: body ?? null };
   } catch (error) {
     console.error("Failed to parse raw request:", error);
     return null;
@@ -43,56 +40,96 @@ export function parseRawRequest(rawRequest: string): HttpRequest | null {
 
 /**
  * Generates a YAML string for an afrog PoC from a PocData object.
- * @param data The PocData object containing all information for the PoC.
- * @returns A formatted YAML string.
  */
 export function generatePocYaml(data: PocData): string {
+    const preparedData: PocData = JSON.parse(JSON.stringify(data));
+    
+    // 步骤 1: 预处理 brute 数据
+    if (preparedData.rules) {
+        preparedData.rules.forEach((rule: Rule) => {
+            if (rule.brute && rule.brute.payloads) {
+                const pocPayloads: Record<string, string[]> = {};
+                for (const key in rule.brute.payloads) {
+                    const value = rule.brute.payloads[key];
+                    pocPayloads[key] = value.split('\n').filter(line => line.trim() !== '');
+                }
+                rule.brute = {
+                    mode: rule.brute.mode,
+                    commit: rule.brute.commit,
+                    continue: rule.brute.continue,
+                    ...pocPayloads
+                };
+            }
+        });
+    }
+
+    // 步骤 2: 生成 YAML 字符串
     const indent = (level: number) => '  '.repeat(level);
 
-    let yaml = `id: ${data.id}\n\n`;
+    let yaml = `id: ${preparedData.id}\n\n`;
 
     yaml += `info:\n`;
-    yaml += `${indent(1)}name: ${data.info.name}\n`;
-    yaml += `${indent(1)}author: ${data.info.author}\n`;
-    yaml += `${indent(1)}severity: ${data.info.severity}\n`;
-    yaml += `${indent(1)}description: |\n${indent(2)}${data.info.description.replace(/\n/g, `\n${indent(2)}`)}\n`;
-    if (data.info.reference.length > 0) {
+    yaml += `${indent(1)}name: ${preparedData.info.name}\n`;
+    yaml += `${indent(1)}author: ${preparedData.info.author}\n`;
+    yaml += `${indent(1)}severity: ${preparedData.info.severity}\n`;
+    yaml += `${indent(1)}description: |\n${indent(2)}${preparedData.info.description.replace(/\n/g, `\n${indent(2)}`)}\n`;
+    if (preparedData.info.reference && preparedData.info.reference.length > 0) {
         yaml += `${indent(1)}reference:\n`;
-        data.info.reference.forEach(ref => {
+        preparedData.info.reference.forEach(ref => {
             yaml += `${indent(2)}- ${ref}\n`;
         });
     }
-    if (data.info.tags.length > 0) {
-        yaml += `${indent(1)}tags: ${data.info.tags.join(', ')}\n`;
+    if (preparedData.info.tags && preparedData.info.tags.length > 0) {
+        yaml += `${indent(1)}tags: ${preparedData.info.tags.join(', ')}\n`;
     }
 
-    if (data.set.length > 0) {
+    if (preparedData.set && preparedData.set.length > 0) {
         yaml += `\nset:\n`;
-        data.set.forEach(v => {
+        preparedData.set.forEach(v => {
             yaml += `${indent(1)}${v.key}: ${v.value}\n`;
         });
     }
 
-    if (data.rules.length > 0) {
+    if (preparedData.rules && preparedData.rules.length > 0) {
         yaml += `\nrules:\n`;
-        data.rules.forEach(rule => {
+        // 【关键修正 1】: 必须遍历处理过的 `preparedData.rules`
+        preparedData.rules.forEach(rule => {
             yaml += `${indent(1)}${rule.id}:\n`;
+
+            // 【关键修正 2】: 补全了生成 Brute 模块 YAML 的逻辑
+            if (rule.brute) {
+                yaml += `${indent(2)}brute:\n`;
+                yaml += `${indent(3)}mode: ${rule.brute.mode}\n`;
+                yaml += `${indent(3)}commit: ${rule.brute.commit}\n`;
+                yaml += `${indent(3)}continue: ${rule.brute.continue}\n`;
+
+                for (const [key, value] of Object.entries(rule.brute)) {
+                    if (['mode', 'commit', 'continue', 'payloads'].includes(key)) {
+                        continue;
+                    }
+                    if (Array.isArray(value) && value.length > 0) {
+                        yaml += `${indent(3)}${key}:\n`;
+                        value.forEach(item => {
+                            yaml += `${indent(4)}- ${item}\n`;
+                        });
+                    }
+                }
+            }
+            
             yaml += `${indent(2)}request:\n`;
             yaml += `${indent(3)}method: ${rule.request.method}\n`;
             yaml += `${indent(3)}path: ${rule.request.path}\n`;
             
-            if (Object.keys(rule.request.headers).length > 0) {
+            if (rule.request.headers && Object.keys(rule.request.headers).length > 0) {
                 yaml += `${indent(3)}headers:\n`;
                 for (const [key, value] of Object.entries(rule.request.headers)) {
                     yaml += `${indent(4)}${key}: ${value}\n`;
                 }
             }
-
        
-            // body 添加
             if (rule.request.body) {
                 const bodyLines = rule.request.body.split('\n');
-                if (bodyLines.length > 1) {
+                if (bodyLines.length > 1 || bodyLines[0].includes(': ')) {
                     yaml += `${indent(3)}body: |\n`;
                     bodyLines.forEach(line => {
                         yaml += `${indent(4)}${line}\n`;
@@ -102,23 +139,18 @@ export function generatePocYaml(data: PocData): string {
                 }
             }
 
-            // 添加 output 处理
             if (rule.output && Object.keys(rule.output).length > 0) {
-                rule.output = rule.output;
-                //console.log("Rule Output:", rule.output); // Debug log
                 yaml += `${indent(2)}output:\n`;
                 for (const [key, value] of Object.entries(rule.output)) {
                     yaml += `${indent(3)}${key}: ${value}\n`;
                 }
-                //console.log("YAML after adding output:\n", yaml); // Debug log
             }
-
 
             yaml += `${indent(2)}expression: ${rule.expression}\n`;
         });
     }
 
-    yaml += `\nexpression: ${data.expression}\n`;
+    yaml += `\nexpression: ${preparedData.expression}\n`;
 
     return yaml;
 }
