@@ -315,7 +315,7 @@ const App: React.FC = () => {
   const buildRuleExpression = useCallback((matchers: Matcher[]): string => {
     const oobMatcher = matchers.find(m => m.type === 'oob');
     if (oobMatcher) {
-        return `oobCheck(oob, oob.Protocol${oobMatcher.condition}, ${oobMatcher.value})`;
+        return `oobCheck(oob.Protocol${oobMatcher.condition}, ${oobMatcher.value})`;
     }
 
     return matchers.map(m => {
@@ -468,9 +468,9 @@ const updateRuleOutput = (ruleIndex: number, newOutput: Record<string, string>) 
                   <PlusIcon />
                   添加变量
                 </button>
-                <button onClick={addOobVariables} className="flex-1 flex items-center justify-center gap-2 bg-primary/10 text-primary font-medium p-2.5 rounded-lg hover:bg-primary/20 transition-colors duration-200">
+                {/* <button onClick={addOobVariables} className="flex-1 flex items-center justify-center gap-2 bg-primary/10 text-primary font-medium p-2.5 rounded-lg hover:bg-primary/20 transition-colors duration-200">
                   使用 OOB
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
