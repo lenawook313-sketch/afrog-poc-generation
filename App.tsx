@@ -273,6 +273,7 @@ const App: React.FC = () => {
       if (newType === 'oob') {
         updatedMatcher.condition = 'HTTP';
         updatedMatcher.value = '3';
+        
       } else if (['status', 'latency'].includes(newType)) {
         updatedMatcher.condition = newType === 'status' ? '==' : '<=';
         updatedMatcher.value = newType === 'status' ? '200' : '6000';
@@ -315,7 +316,11 @@ const App: React.FC = () => {
   const buildRuleExpression = useCallback((matchers: Matcher[]): string => {
     const oobMatcher = matchers.find(m => m.type === 'oob');
     if (oobMatcher) {
-        return `oobCheck(oob.Protocol${oobMatcher.condition}, ${oobMatcher.value})`;
+        if (oobMatcher.condition === 'DNS') {
+            return 'oobCheck("dns", 5)';
+        } else if (oobMatcher.condition === 'HTTP') {
+            return 'oobCheck("http", 3)';
+        }
     }
 
     return matchers.map(m => {
@@ -561,11 +566,11 @@ const updateRuleOutput = (ruleIndex: number, newOutput: Record<string, string>) 
                                 value={matcher.type} 
                                 onChange={(e) => updateMatcher(ruleIndex, matcherIndex, { type: e.target.value as Matcher['type'] })}
                               >
-                                <option value="status">Status (状态码)</option>
-                                <option value="body">Body (响应体)</option>
-                                <option value="raw_header">Header (响应头)</option>
-                                <option value="latency">Latency (耗时)</option>
-                                <option value="oob">OOB (外带)</option>
+                                <option value="status">Status</option>
+                                <option value="body">Body</option>
+                                <option value="raw_header">Header</option>
+                                <option value="latency">Latency</option>
+                                <option value="oob">oobCheck</option>
                               </SelectField>
                             </div>
 
